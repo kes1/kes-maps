@@ -15,10 +15,7 @@ function initMap()
 // Set map centre in National Grid Eastings and Northings and select zoom level 7
 
       osMap.setCenter(new OpenSpace.MapPoint(235524, 818521), 1);
-// Define where the markers file is
-    
-    var markersFile = "TSKC_Weekend_Trips.csv";
-    
+
 // Load the markers file
     
     OpenLayers.loadURL(markersFile, null, this, parseFile, onFail);
