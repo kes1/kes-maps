@@ -111,7 +111,7 @@ function onResult(mapPoint)
         <!--    <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li> -->
           </ul>
-            <form class="navbar-form navbar-right" _lpchecked="1" onsubmit="searchGazetteer();">
+            <form class="navbar-form navbar-right" _lpchecked="1" onsubmit="return searchGazetteer();">
             <input type="text" class="form-control" placeholder="Search..." id="searchArea" />
                 <select name="select" id="selectGaz" onchange="zoomGazSel(this.form.select);" style="display:none"><option>Select a place...</option><option></option></select>
           </form>
