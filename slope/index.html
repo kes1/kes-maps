@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Map showing areas in Scotland steeper than 27.5 degrees">
+    <meta name="author" content="Andrew Kesterton">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Scottish Slope Map</title>
+<script type="text/javascript" src="http://openspace.ordnancesurvey.co.uk/osmapapi/openspace.js?key=80AEA98A9E0141B7E0405F0ACA605856"></script>  
+<!-- <script type="text/javascript" src="http://openspace.ordnancesurvey.co.uk/osmapapi/script/mapbuilder/searchbox.js"></script> -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+
+    <!-- Custom styles for this template -->
+    <link href="navbar-static-top.css" rel="stylesheet">
+<script>
+// Define the osMap variable
+
+var osMap, gazetteer, postcodeService ;
+
+// This function creates the map and is called by the div in the HTML
+
+function init()
+
+  {
+    
+// Create new map
+    
+    osMap = new OpenSpace.Map('map', {resolutions:[2500, 1000,500, 200, 100, 50, 25, 10]});
+      // Assign gazetteer search
+    
+    //gazetteer = new OpenSpace.Gazetteer();  
+    postcodeService = new OpenSpace.Postcode();
+// Set map centre in National Grid Eastings and Northings and select zoom level 0
+
+    osMap.setCenter(new OpenSpace.MapPoint(272150, 781000), 3);
+      var slopeUrl = './slope_dpi/_alllayers';
+            var tileSize = new OpenLayers.Size(256,256);
+            var agsTileOrigin = new OpenLayers.LonLat(0,1300000);
+        
+         var slopeLayer = new OpenLayers.Layer.ArcGISCache('Slope', slopeUrl, {
+                    tileOrigin: agsTileOrigin,
+                    resolutions: osMap.resolutions, 
+                    sphericalMercator: false,
+                    maxExtent: osMap.maxExtent,
+                    useArcGISServer: false,
+                    isBaseLayer: false,
+                    tileSize:tileSize,
+                    projection: osMap.projection,
+                    opacity:0.6
+                });
+        osMap.addLayer(slopeLayer);
+  }
+    
+    
+function searchGazetteer()
+
+  {
+
+    var query = document.getElementById("placename");
+
+                gazetteer.getLonLat(query.value, onResult);
+                return false;
+  }
+    
+function onResult(mapPoint)
+
+  {
+    
+    if (mapPoint !== null)
+    osMap.setCenter(mapPoint, 5);
+    
+  }
+    
+</script>
+
+<style>
+  html, body { height: 100%;}
+  #map {width: 100%; height: 600px; border:none;}    
+    .olTileImage.olImageLoadError {
+    display: none !important;
+}
+</style>
+    </head>
+
+  <body onload="init()">
+
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Scotland Slope Map</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+            <form class="navbar-form navbar-right" _lpchecked="1" onsubmit="searchGazetteer();">
+            <input type="text" class="form-control" placeholder="Search..." id="searchArea" />
+                <select name="select" id="selectGaz" onchange="zoomGazSel(this.form.select);" style="display:none"><option>Select a place...</option><option></option></select>
+          </form>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+    <div class="container">
+        <div id="map"></div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  </body>
+</html>
