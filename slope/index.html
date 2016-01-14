@@ -37,8 +37,8 @@ function init()
     osMap = new OpenSpace.Map('map', {resolutions:[2500, 1000,500, 200, 100, 50, 25, 10]});
       // Assign gazetteer search
     
-    //gazetteer = new OpenSpace.Gazetteer();  
-    postcodeService = new OpenSpace.Postcode();
+    gazetteer = new OpenSpace.Gazetteer();  
+   // postcodeService = new OpenSpace.Postcode();
 // Set map centre in National Grid Eastings and Northings and select zoom level 0
 
     osMap.setCenter(new OpenSpace.MapPoint(272150, 781000), 3);
