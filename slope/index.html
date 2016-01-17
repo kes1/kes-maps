@@ -156,7 +156,7 @@ function onResult(mapPoint)
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
       <script type="application/javascript">  
-          function fixContentHeight(){
+          function fixMapHeight(){
     var viewHeight = $(window).height();
     var header = $("div[data-role='header']:visible:visible");
     var navbar = $(".navbar");
@@ -169,10 +169,17 @@ function onResult(mapPoint)
 } 
           
           
+          
           $(document).ready(function () {
-              fixContentHeight();
+              fixMapHeight();
               init();
-   });</script>
+   });
+      
+      $(window).resize(function(){
+         fixMapHeight();
+          osMap.updateSize();
+      });
+      </script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
             <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
