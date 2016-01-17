@@ -21,7 +21,10 @@ body {
   height: 60px;
   background-color: #f5f5f5;
   text-align:center;
-    line-height:45px;
+}
+
+.footer.sm-links{
+     line-height:45px;   
 }
 
 .footer a {

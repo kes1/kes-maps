@@ -80,6 +80,8 @@ function onResult(mapPoint)
     
   }
     
+
+    
 </script>
 
 <style>
@@ -88,10 +90,24 @@ function onResult(mapPoint)
     .olTileImage.olImageLoadError {
     display: none !important;
 }
+    
+    .map-container {
+     width:100%;
+        height:100%;
+    }
+    
+    .legend-panel {
+
+        float:right;
+        margin-right:5px;
+        top:-100px;
+        z-index:999;
+        position:relative;
+    }
 </style>
     </head>
 
-  <body onload="init()">
+  <body>
 
     <!-- Static navbar -->
     <nav class="navbar navbar-default navbar-static-top">
@@ -120,16 +136,18 @@ function onResult(mapPoint)
     </nav>
 
 
-    <div class="container">        
+    <div class="container">     
+        <div class="map-container clearfix">
         <div id="map"></div>
-        <div class="panel-default">
+        <div class="panel panel-default legend-panel">
             <div class="panel-heading">Steepness</div>
         <div class="panel-body"><sub>30&deg;&nbsp;</sub><img src="images/legend-l.png" class="img-rounded" style="margin-right:2px;" alt="Legend showing shades of purple for slope on the map, from light purple at 30 degrees, to dark purple at 63 degrees"><sub>65&deg;&nbsp; Slope</sub></div>
                     </div>
+        </div>
     </div>
     <footer class="footer">
       <div class="container">
-          <p class="text-muted">Climbing and mountaineering are activities with a danger of personal injury or death. Participants in these activities should be aware of and accept these risks and be responsible for their own actions and involvement.</p>
+          <p class="text-muted"><small>Climbing and mountaineering are activities with a danger of personal injury or death. Participants in these activities should be aware of and accept these risks and be responsible for their own actions and involvement.</small></p>
 </div>
     </footer>
 
@@ -137,6 +155,24 @@ function onResult(mapPoint)
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+      <script type="application/javascript">  
+          function fixContentHeight(){
+    var viewHeight = $(window).height();
+    var header = $("div[data-role='header']:visible:visible");
+    var navbar = $(".navbar");
+    var footer = $("footer");
+    var content = $("#map:visible:visible");   
+              console.log("Navbar : " + navbar.outerHeight() + "," +footer.outerHeight());
+    var contentHeight = viewHeight - header.outerHeight() - navbar.outerHeight() - footer.outerHeight() - 40;
+              console.log("New height: " + contentHeight);
+    content.height(contentHeight);
+} 
+          
+          
+          $(document).ready(function () {
+              fixContentHeight();
+              init();
+   });</script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
             <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
