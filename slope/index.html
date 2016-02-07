@@ -21,123 +21,55 @@
 
     <!-- Custom styles for this template -->
     <link href="navbar-static-top.css" rel="stylesheet">
-<script>
-// Define the osMap variable
 
-var osMap, gazetteer, postcodeService ;
-
-// This function creates the map and is called by the div in the HTML
-
-function init()
-
-  {
-    
-// Create new map
-    
-    osMap = new OpenSpace.Map('map', {resolutions:[2500, 1000,500, 200, 100, 50, 25, 10]});
-      // Assign gazetteer search
-    
-    gazetteer = new OpenSpace.Gazetteer();  
-   // postcodeService = new OpenSpace.Postcode();
-// Set map centre in National Grid Eastings and Northings and select zoom level 0
-
-    osMap.setCenter(new OpenSpace.MapPoint(272150, 781000), 3);
-      var slopeUrl = './slope_dpi/_alllayers';
-            var tileSize = new OpenLayers.Size(256,256);
-            var agsTileOrigin = new OpenLayers.LonLat(0,1300000);
-        
-         var slopeLayer = new OpenLayers.Layer.ArcGISCache('Slope', slopeUrl, {
-                    tileOrigin: agsTileOrigin,
-                    resolutions: osMap.resolutions, 
-                    sphericalMercator: false,
-                    maxExtent: osMap.maxExtent,
-                    useArcGISServer: false,
-                    isBaseLayer: false,
-                    tileSize:tileSize,
-                    projection: osMap.projection,
-                    opacity:0.6
-                });
-        osMap.addLayer(slopeLayer);
-  }
-    
-    
-function searchGazetteer()
-
-  {
-
-    var query = document.getElementById("placename");
-
-                gazetteer.getLonLat(query.value, onResult);
-                return false;
-  }
-    
-function onResult(mapPoint)
-
-  {
-    
-    if (mapPoint !== null)
-    osMap.setCenter(mapPoint, 5);
-    
-  }
-    
-
-    
-</script>
 <!-- Angular -->
 <script type="text/javascript">
 
 var ngApp =     angular.module("openspace", []);
     
-ngApp.controller('mapController',function($scope){
+ngApp.controller('mapController',function($scope, mapRegistry){
     var that = this;
     var osMap;
-    this.replaceMarker = function(){
-        // Delete any markers from layer
+    
+    
+    // Create new map
+    
+    osMap = new OpenSpace.Map('os-map', {resolutions:[2500, 1000,500, 200, 100, 50, 25, 10]});
+    mapRegistry.setMap(osMap);
+    // Set map centre in National Grid Eastings and Northings and select zoom level 3
+
+    osMap.setCenter(new OpenSpace.MapPoint($scope.easting, $scope.northing), 3);
+ 
+    
+        this.replaceMarker = function(){
+        // Delete any markers from layer            
+            console.log("replace marker");
        markersLayer.clearMarkers();
     // Create a variable to hold a map position    
     var pos = new OpenSpace.MapPoint(parseFloat($scope.easting), parseFloat($scope.northing));
-     //   osMap.setCenter(pos,5);
+    osMap.setCenter(pos,7);
+            osMap.updateSize();
     // Add a marker with that position     
     var marker = new OpenLayers.Marker(pos);
     markersLayer.addMarker(marker);    
+            osMap.updateSize();
     };
     this.addLayer= function(newLayer){
-     osMap.addLayer(newLayer);   
+        // Add below markers layer
+     osMap.addLayer(newLayer);
+     osMap.raiseLayer(osMap.getMarkerLayer(), 1);
     };
     
     this.getMap = function(){
      return osMap;   
     }
     
-        
-    
-    // Create new map
-    
-    osMap = new OpenSpace.Map('os-map');
-    
-    // Set map centre in National Grid Eastings and Northings and select zoom level 3
-
-    osMap.setCenter(new OpenSpace.MapPoint($scope.easting, $scope.northing), 3);
-            
-    // Assign a new markers layer to a variable    
-    var markersLayer = new OpenLayers.Layer.Markers("Markers");
-    // Add the layer to the map    
-    osMap.addLayer(markersLayer);
-    this.replaceMarker();
-    
-
-    
-    // Watch for changes to model;
-    $scope.$watch("northing",function(newNorthing, oldNorthing){
-        console.log("Northing change");
-        that.replaceMarker();        
-    })
     
 });
 ngApp.directive('osMap', function(){
      return {
         restrict:'EA',
-        replace: false,
+        replace: true,
          controller:'mapController',
          transclude:true,
         //controllerAs:'mapCtrl',
@@ -145,7 +77,7 @@ ngApp.directive('osMap', function(){
           easting: '=',
           northing: '='            
         },
-        template: '<div id="os-map" ></div><ng-transclude></ng-transclude'        
+        template: '<div id="os-map" ><ng-transclude></ng-transclude></div>'        
     }    
 }); 
     
@@ -175,11 +107,11 @@ ngApp.directive('osMap', function(){
                 theMap = mapObject;
             }                        
         }
-        
+        return service;
     }]);
     
 
-ngApp.controller('gazetteerController', function($scope,gazetteerSearch){    
+ngApp.controller('gazetteerController', function($scope,gazetteerSearch, mapRegistry){    
   var that = this;
   this.places = [];
   this.searchGaz = function(){
@@ -198,24 +130,35 @@ ngApp.controller('gazetteerController', function($scope,gazetteerSearch){
     };
       
       this.formSubmit = function(){
-          if (!this.hasResults){
+          if (!this.hasResult){
         // If no results - do search.
           this.searchGaz();
           }
           else{
-           this.hasResults = false;   
+              // Reset.
+           this.searchValue = "";
+           this.hasResult = false;   
+           mapRegistry.getMap().clearMarkers();
           }
       };
       
     this.placeSelected = function(place){
         console.log("Zoom map to :"+ this.selectedPlace.location.lat + ","+ this.selectedPlace.location.lon);
+        var _map = mapRegistry.getMap()
+        var markersLayer = 
+        _map.getMarkerLayer();
+        markersLayer.clearMarkers();
+    // Create a variable to hold a map position            
+            var _pos = new OpenSpace.MapPoint(parseFloat(this.selectedPlace.location.lon), parseFloat(this.selectedPlace.location.lat));
+
+    // Add a marker with that position     
+    var marker = new OpenLayers.Marker(_pos);
+    markersLayer.addMarker(marker);     
+    _map.setCenter(_pos,7);
         
-        $scope.easting = this.selectedPlace.location.lon;
-        $scope.northing = this.selectedPlace.location.lat;
-        this.searchValue = "";
-        this.hasResult = false;
     }
-      // Todo - interact with the map. Another object? How does this fit togethe?!! See how ESRI sample deals with layers as children of the map directive.
+      // Todo - interact with the map. Change from using root scope to mapregistry service. 
+    
   };
     
     
@@ -232,7 +175,7 @@ ngApp.directive('osGazetteer', function(gazetteerSearch){
         },
         controller:'gazetteerController',
         controllerAs:'gazCtrl',
-        template:'<div class="mapSearch form-inline"><form ng-submit="gazCtrl.formSubmit()"><span ng-hide="gazCtrl.hasResult"><input type="search" class="form-control" ng-model="gazCtrl.searchValue" placeholder="Search for a place.." /><button class="btn btn-default" ng-click="gazCtrl.searchGaz()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;Search</button></span><span ng-show="gazCtrl.hasResult"><select  ng-change="gazCtrl.placeSelected()" ng-model="gazCtrl.selectedPlace" ng-options="place.name group by place.type for place in gazCtrl.places" class="form-control" ><option disabled>Select a place..</place></select><button class="btn btn-default" ng-click="gazCtrl.formSubmit()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;Clear</button></span></form></div>'        
+        template:'<form class="navbar-form navbar-right search" ng-submit="gazCtrl.formSubmit()"><span ng-hide="gazCtrl.hasResult"><input type="search" class="form-control" ng-model="gazCtrl.searchValue" placeholder="Search for a place.." /><button class="btn btn-default" ng-click="gazCtrl.searchGaz()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;Search</button></span><span ng-show="gazCtrl.hasResult"><select  ng-change="gazCtrl.placeSelected()" ng-model="gazCtrl.selectedPlace" ng-options="place.name group by place.type for place in gazCtrl.places" class="form-control" ><option disabled>Select a place..</place></select><button class="btn btn-default" ng-click="gazCtrl.formSubmit()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;Clear</button></span></form>'        
     }
     
     
@@ -300,25 +243,7 @@ ngApp.directive('osEsriCacheLayer', function(){
       
       
 <style>
-  html, body { height: 100%;}
-  #os-map {width: 100%; height: 600px;max-height:100%; border:none;}    
-    .olTileImage.olImageLoadError {
-    display: none !important;
-}
-    
-    .map-container {
-     width:100%;
-        height:100%;
-    }
-    
-    .legend-panel {
 
-        float:right;
-        margin-right:5px;
-        top:-100px;
-        z-index:999;
-        position:relative;
-    }
 </style>
     </head>
 
@@ -342,10 +267,7 @@ ngApp.directive('osEsriCacheLayer', function(){
         <li><a href="about.html">About</a></li>
         <!--    <li><a href="#contact">Contact</a></li> -->
           </ul>
-            <form class="navbar-form navbar-right" _lpchecked="1" onsubmit="return searchGazetteer();" style="display:none;">
-            <input disabled="disabled" type="text" class="form-control" placeholder="Search..." id="searchArea" />
-                <select name="select" id="selectGaz" onchange="zoomGazSel(this.form.select);" style="display:none"><option>Select a place...</option><option></option></select>
-          </form>
+             <os-gazetteer easting="mapLocation.xcoord" northing="mapLocation.ycoord"></os-gazetteer>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
