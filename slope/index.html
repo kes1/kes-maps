@@ -10,8 +10,8 @@
     
 <meta property="og:image" content="http://maps.kesterton.org.uk/slope/images/walk-in-thumb.jpg" />
     <title>Scottish Slope Map</title>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
 <script type="text/javascript" src="http://openspace.ordnancesurvey.co.uk/osmapapi/openspace.js?key=80AEA98A9E0141B7E0405F0ACA605856"></script>  
-<!-- <script type="text/javascript" src="http://openspace.ordnancesurvey.co.uk/osmapapi/script/mapbuilder/searchbox.js"></script> -->
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
@@ -83,10 +83,225 @@ function onResult(mapPoint)
 
     
 </script>
+<!-- Angular -->
+<script type="text/javascript">
 
+var ngApp =     angular.module("openspace", []);
+    
+ngApp.controller('mapController',function($scope){
+    var that = this;
+    var osMap;
+    this.replaceMarker = function(){
+        // Delete any markers from layer
+       markersLayer.clearMarkers();
+    // Create a variable to hold a map position    
+    var pos = new OpenSpace.MapPoint(parseFloat($scope.easting), parseFloat($scope.northing));
+     //   osMap.setCenter(pos,5);
+    // Add a marker with that position     
+    var marker = new OpenLayers.Marker(pos);
+    markersLayer.addMarker(marker);    
+    };
+    this.addLayer= function(newLayer){
+     osMap.addLayer(newLayer);   
+    };
+    
+    this.getMap = function(){
+     return osMap;   
+    }
+    
+        
+    
+    // Create new map
+    
+    osMap = new OpenSpace.Map('os-map');
+    
+    // Set map centre in National Grid Eastings and Northings and select zoom level 3
+
+    osMap.setCenter(new OpenSpace.MapPoint($scope.easting, $scope.northing), 3);
+            
+    // Assign a new markers layer to a variable    
+    var markersLayer = new OpenLayers.Layer.Markers("Markers");
+    // Add the layer to the map    
+    osMap.addLayer(markersLayer);
+    this.replaceMarker();
+    
+
+    
+    // Watch for changes to model;
+    $scope.$watch("northing",function(newNorthing, oldNorthing){
+        console.log("Northing change");
+        that.replaceMarker();        
+    })
+    
+});
+ngApp.directive('osMap', function(){
+     return {
+        restrict:'EA',
+        replace: false,
+         controller:'mapController',
+         transclude:true,
+        //controllerAs:'mapCtrl',
+        scope:{
+          easting: '=',
+          northing: '='            
+        },
+        template: '<div id="os-map" ></div><ng-transclude></ng-transclude'        
+    }    
+}); 
+    
+    ngApp.factory('gazetteerSearch',['$q',function($q){
+    var gazetteer = new OpenSpace.Gazetteer();
+    
+    var service = {
+        findPlaces: function(placename){
+            var d = $q.defer()
+            gazetteer.getLocations(placename, d.resolve);
+            return d.promise;
+        }            
+    };
+    return service;
+}]);
+    
+    ngApp.factory('mapRegistry',['$q',function($q){
+        // For now this registry will store one map object.  
+        // Could be extended as in esri.core to store multiple map instances.
+        var theMap;
+        
+        var service = {
+         getMap: function(){
+            return theMap; 
+         },
+         setMap:function(mapObject){
+                theMap = mapObject;
+            }                        
+        }
+        
+    }]);
+    
+
+ngApp.controller('gazetteerController', function($scope,gazetteerSearch){    
+  var that = this;
+  this.places = [];
+  this.searchGaz = function(){
+      console.log("Search Gaz Method");
+      gazetteerSearch.findPlaces(this.searchValue).then(function(places){
+      that.parseResults(places); 
+      });
+      
+    this.parseResults= function(places) {
+        if (places.length > 0)
+        {
+            console.log(places);
+            this.places = places;            
+            this.hasResult = true;
+        }
+    };
+      
+      this.formSubmit = function(){
+          if (!this.hasResults){
+        // If no results - do search.
+          this.searchGaz();
+          }
+          else{
+           this.hasResults = false;   
+          }
+      };
+      
+    this.placeSelected = function(place){
+        console.log("Zoom map to :"+ this.selectedPlace.location.lat + ","+ this.selectedPlace.location.lon);
+        
+        $scope.easting = this.selectedPlace.location.lon;
+        $scope.northing = this.selectedPlace.location.lat;
+        this.searchValue = "";
+        this.hasResult = false;
+    }
+      // Todo - interact with the map. Another object? How does this fit togethe?!! See how ESRI sample deals with layers as children of the map directive.
+  };
+    
+    
+    
+})
+    
+ngApp.directive('osGazetteer', function(gazetteerSearch){
+    return{
+        restrict:'EA',
+        replace:true,
+        scope: {
+            easting:'=',
+            northing:'='            
+        },
+        controller:'gazetteerController',
+        controllerAs:'gazCtrl',
+        template:'<div class="mapSearch form-inline"><form ng-submit="gazCtrl.formSubmit()"><span ng-hide="gazCtrl.hasResult"><input type="search" class="form-control" ng-model="gazCtrl.searchValue" placeholder="Search for a place.." /><button class="btn btn-default" ng-click="gazCtrl.searchGaz()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;Search</button></span><span ng-show="gazCtrl.hasResult"><select  ng-change="gazCtrl.placeSelected()" ng-model="gazCtrl.selectedPlace" ng-options="place.name group by place.type for place in gazCtrl.places" class="form-control" ><option disabled>Select a place..</place></select><button class="btn btn-default" ng-click="gazCtrl.formSubmit()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;Clear</button></span></form></div>'        
+    }
+    
+    
+});    
+ngApp.controller('osEsriCacheLayerController', function($scope){
+    var mapLayerUrl = $scope.url;
+    var opacity = parseFloat($scope.opacity)||1; 
+    
+    // As cache layer need mapobject to get map resolutions.
+    this.getLayer = function(map){
+        console.log("Controller " + map)
+         var tileSize = new OpenLayers.Size(256,256);
+         var agsTileOrigin = new OpenLayers.LonLat(0,1300000); //TODO Can I get this from openlayers map?
+        
+       return new OpenLayers.Layer.ArcGISCache('Slope', mapLayerUrl, {
+                    tileOrigin: agsTileOrigin,
+                    resolutions: map.resolutions, 
+                    sphericalMercator: false,
+                    maxExtent: map.maxExtent,
+                    useArcGISServer: false,
+                    isBaseLayer: false,
+                    tileSize:tileSize,
+                    projection: map.projection,
+                    opacity:opacity
+                }); 
+        
+    }
+    
+});
+
+    
+ngApp.directive('osEsriCacheLayer', function(){
+ // like in https://github.com/Esri/angular-esri-map/blob/v1.1.0/src/layers/esriFeatureLayer.js 
+    return{
+     restrict:'EA',
+        replace:true,
+        // Require directive, including parent osmap directive which will 
+        // inject it's controller for access to the map.
+        require:['osEsriCacheLayer','^osMap'],
+        scope:{
+          url:'@',
+          opacity:'@?'
+        },
+        controller:'osEsriCacheLayerController',
+       // controllerAs:'cacheController',
+        link:function(scope, element, attrs, controllers){
+            // controllers is now an array of the controllers from the 'require' option
+            var layerController = controllers[0];
+            var mapController = controllers[1];
+            
+            // Get layer object and add to map. 
+           mapController.addLayer(layerController.getLayer(mapController.getMap()));            
+        }
+        
+        
+    }
+    
+    
+    
+});
+    
+    </script>          
+      
+      
+      
+      
 <style>
   html, body { height: 100%;}
-  #map {width: 100%; height: 600px;max-height:100%; border:none;}    
+  #os-map {width: 100%; height: 600px;max-height:100%; border:none;}    
     .olTileImage.olImageLoadError {
     display: none !important;
 }
@@ -107,7 +322,7 @@ function onResult(mapPoint)
 </style>
     </head>
 
-  <body>
+  <body ng-app="openspace">
 
     <!-- Static navbar -->
     <nav class="navbar navbar-default navbar-static-top">
@@ -136,9 +351,12 @@ function onResult(mapPoint)
     </nav>
 
 
-    <div class="container">     
-        <div class="map-container clearfix">
-        <div id="map"></div>
+    <div class="container">   
+        <div class="map-container clearfix" ng-init="mapLocation.xcoord=272150;mapLocation.ycoord=781000;">
+            <div os-map easting="mapLocation.xcoord" northing="mapLocation.ycoord">
+               <div os-esri-cache-layer url="http://maps.kesterton.org.uk/slope/slope_dpi/_alllayers" opacity="0.6"></div> 
+            </div>
+            
         <div class="panel panel-default legend-panel">
             <div class="panel-heading">Steepness</div>
         <div class="panel-body"><sub>30&deg;&nbsp;</sub><img src="images/legend-l.png" class="img-rounded" style="margin-right:2px;" alt="Legend showing shades of purple for slope on the map, from light purple at 30 degrees, to dark purple at 63 degrees"><sub>65&deg;&nbsp; Slope</sub></div>
@@ -161,7 +379,7 @@ function onResult(mapPoint)
     var header = $("div[data-role='header']:visible:visible");
     var navbar = $(".navbar");
     var footer = $("footer");
-    var content = $("#map:visible:visible");   
+    var content = $("#os-map:visible:visible");   
               console.log("Navbar : " + navbar.outerHeight() + "," +footer.outerHeight());
     var contentHeight = viewHeight - header.outerHeight() - navbar.outerHeight() - footer.outerHeight() - 40;
               console.log("New height: " + contentHeight);
@@ -172,12 +390,12 @@ function onResult(mapPoint)
           
           $(document).ready(function () {
               fixMapHeight();
-              init();
+             // init();
    });
       
       $(window).resize(function(){
          fixMapHeight();
-          osMap.updateSize();
+      //    osMap.updateSize();
       });
       </script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
