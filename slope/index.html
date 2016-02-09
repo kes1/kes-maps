@@ -113,6 +113,7 @@ ngApp.directive('osMap', function(){
 
 ngApp.controller('gazetteerController', function($scope,gazetteerSearch, mapRegistry){    
   var that = this;
+  this.nothingFound = false;
   this.places = [];
   this.searchGaz = function(){
       console.log("Search Gaz Method");
@@ -123,9 +124,15 @@ ngApp.controller('gazetteerController', function($scope,gazetteerSearch, mapRegi
     this.parseResults= function(places) {
         if (places.length > 0)
         {
-            console.log(places);
+            places.unshift({name:"--Select a place--",
+                          location:false});
+            this.selectedPlace = places[0];
             this.places = places;            
             this.hasResult = true;
+        }
+        else
+        {
+            this.nothingFound = true;
         }
     };
       
@@ -143,7 +150,7 @@ ngApp.controller('gazetteerController', function($scope,gazetteerSearch, mapRegi
       };
       
     this.placeSelected = function(place){
-        console.log("Zoom map to :"+ this.selectedPlace.location.lat + ","+ this.selectedPlace.location.lon);
+            if (place.location){
         var _map = mapRegistry.getMap()
         var markersLayer = 
         _map.getMarkerLayer();
@@ -155,7 +162,7 @@ ngApp.controller('gazetteerController', function($scope,gazetteerSearch, mapRegi
     var marker = new OpenLayers.Marker(_pos);
     markersLayer.addMarker(marker);     
     _map.setCenter(_pos,7);
-        
+            }
     }
       // Todo - interact with the map. Change from using root scope to mapregistry service. 
     
@@ -175,7 +182,7 @@ ngApp.directive('osGazetteer', function(gazetteerSearch){
         },
         controller:'gazetteerController',
         controllerAs:'gazCtrl',
-        template:'<form class="navbar-form navbar-right search" ng-submit="gazCtrl.formSubmit()"><span ng-hide="gazCtrl.hasResult"><input type="search" class="form-control" ng-model="gazCtrl.searchValue" placeholder="Search for a place.." /><button class="btn btn-default" ng-click="gazCtrl.searchGaz()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;Search</button></span><span ng-show="gazCtrl.hasResult"><select  ng-change="gazCtrl.placeSelected()" ng-model="gazCtrl.selectedPlace" ng-options="place.name group by place.type for place in gazCtrl.places" class="form-control" ><option disabled>Select a place..</place></select><button class="btn btn-default" ng-click="gazCtrl.formSubmit()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;Clear</button></span></form>'        
+        template:'<form class="navbar-form navbar-right search" ng-submit="gazCtrl.formSubmit()"><div class="alert alert-warning alert-dismissible searchNoResults" ng-show="gazCtrl.nothingFound" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>No places found</strong>, please check and try again. </div> <span ng-hide="gazCtrl.hasResult"><input type="search" class="form-control" ng-model="gazCtrl.searchValue" placeholder="Search for a place.." /><button class="btn btn-default" ng-click="gazCtrl.searchGaz()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;Search</button></span><span ng-show="gazCtrl.hasResult"><select  ng-change="gazCtrl.placeSelected()" ng-model="gazCtrl.selectedPlace" ng-options="place.name group by place.type for place in gazCtrl.places" class="form-control" ><option disabled>Select a place..</place></select><button class="btn btn-default" ng-click="gazCtrl.formSubmit()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;Clear</button></span></form> </div>       '        
     }
     
     
@@ -243,7 +250,12 @@ ngApp.directive('osEsriCacheLayer', function(){
       
       
 <style>
-
+.searchNoResults {
+ position:relative;
+    float:left;
+    left:-50px;
+    
+}
 </style>
     </head>
 
