@@ -1,3 +1,6 @@
+(http://maps.kesterton.org.uk/slope/)[View the map]
+
+
 <h3>Creating the Slope Map</h3>
 <p>Once you download QGIS and the data here is a quick run through of how to create the map, with links to additional resources.</p>
 <p>The terrain 50 data is published as a set of zip files, one for each 10km x 10km grid square in GB.</p>                        
