@@ -1,4 +1,4 @@
-(http://maps.kesterton.org.uk/slope/)[View the map]
+<a href="http://maps.kesterton.org.uk/slope/">View the map</a>
 
 
 <h3>Creating the Slope Map</h3>
