@@ -1,0 +1,8 @@
+default http://www.kesterton.demon.co.uk/MTB/index.htm
+
+#Muckernish woods
+circle muck.htm 233,184 242,207 
+#Black woods
+poly kiltarlity.htm 171,363 186,279 293,259 205,368 172,362 
+#Great Glen
+poly gglen.htm 46,364 88,314 132,343 134,367 46,365 
