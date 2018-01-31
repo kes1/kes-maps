@@ -312,7 +312,7 @@ ngApp.directive('osEsriCacheLayer', function(){
     content.height(contentHeight);
 } 
           
-            fixMapHeight();
+setTimeout(fixMapHeight(), 750);
           
           $(document).ready(function () {
               fixMapHeight();
