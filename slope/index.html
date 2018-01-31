@@ -7,8 +7,11 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="Map showing areas in Scotland steeper than 27.5 degrees">
     <meta name="author" content="Andrew Kesterton">
-    
-<meta property="og:image" content="http://maps.kesterton.org.uk/slope/images/walk-in-thumb.jpg" />
+    <meta property="og:title" content="Scottish Slope Map" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://maps.kesterton.org.uk/slope/index.html" />
+    <meta property="og:image" content="http://maps.kesterton.org.uk/slope/images/walk-in-thumb.jpg" />
+    <meta property="og:description" content="Map showing areas in Scotland steeper than 27.5 degrees" />
     <title>Scottish Slope Map</title>
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
 <script type="text/javascript" src="http://openspace.ordnancesurvey.co.uk/osmapapi/openspace.js?key=80AEA98A9E0141B7E0405F0ACA605856"></script>  
@@ -296,6 +299,7 @@ ngApp.directive('osEsriCacheLayer', function(){
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
       <script type="application/javascript">  
+      
           function fixMapHeight(){
     var viewHeight = $(window).height();
     var header = $("div[data-role='header']:visible:visible");
@@ -308,7 +312,7 @@ ngApp.directive('osEsriCacheLayer', function(){
     content.height(contentHeight);
 } 
           
-          
+            fixMapHeight();
           
           $(document).ready(function () {
               fixMapHeight();
