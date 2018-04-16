@@ -42,7 +42,7 @@ ngApp.controller('mapController',function($scope, mapRegistry){
     // Set map centre in National Grid Eastings and Northings and select zoom level 3
 
     osMap.setCenter(new OpenSpace.MapPoint($scope.easting, $scope.northing), 3);
- 
+    
     
         this.replaceMarker = function(){
         // Delete any markers from layer            
@@ -55,14 +55,14 @@ ngApp.controller('mapController',function($scope, mapRegistry){
     // Add a marker with that position     
     var marker = new OpenLayers.Marker(pos);
     markersLayer.addMarker(marker);    
-            osMap.updateSize();
     };
     this.addLayer= function(newLayer){
         // Add below markers layer
      osMap.addLayer(newLayer);
      osMap.raiseLayer(osMap.getMarkerLayer(), 1);
     };
-    
+    setTimeout( function() { osMap.updateSize();}, 200);  
+  
     this.getMap = function(){
      return osMap;   
     }
