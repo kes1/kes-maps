@@ -1,5 +1,5 @@
 theme: jekyll-theme-minimal
 title: Kes Maps
 description: Some wee projects with maps and open geodata.
-show_downloads: "false"
+show_downloads: false
 google_analytics: UA-72477840-1
