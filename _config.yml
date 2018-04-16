@@ -1,6 +1,6 @@
 theme: jekyll-theme-minimal
 title: Kes Maps
 description: Some wee projects with maps and open geodata.
-logo:/slope/images/walk-in-thumb.jpg
+logo: http://maps.kesterton.org.uk/slope/images/walk-in-thumb.jpg
 show_downloads: false
 google_analytics: UA-72477840-1
